@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Política de Privacidade — Nome da Empresa",
+  title: "Política de Privacidade — Quinta dos Bons Ventos",
   description: "Política de privacidade e proteção de dados pessoais.",
 };
 
@@ -18,7 +18,7 @@ export default function PoliticaDePrivacidade() {
         </h2>
         <p className="leading-relaxed mb-4">
           A sua privacidade é importante para nós. É política da{" "}
-          <strong>Nome da Empresa</strong> respeitar a sua privacidade em
+          <strong>Quinta dos Bons Ventos</strong> respeitar a sua privacidade em
           relação a qualquer informação que possamos coletar em nosso site e
           outras plataformas que possuímos e operamos.
         </p>

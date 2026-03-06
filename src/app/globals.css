@@ -10,10 +10,10 @@
   --color-foreground: var(--foreground);
 
   /* Brand colors — update these per project */
-  --color-brand-primary: #1a1a2e;
-  --color-brand-secondary: #16213e;
-  --color-brand-accent: #0f3460;
-  --color-brand-highlight: #e94560;
+  --color-brand-primary: #006633;
+  --color-brand-secondary: #7E4E24;
+  --color-brand-accent: #2D4223;
+  --color-brand-highlight: #8fbb35;
 
   /* Font families — update these per project */
   --font-heading: var(--font-heading);

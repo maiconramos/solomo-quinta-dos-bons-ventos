@@ -1,23 +1,24 @@
 import type { Metadata } from "next";
-import { Inter, Roboto } from "next/font/google";
+import { Montserrat, Sora } from "next/font/google";
 import CookieConsent from "@/components/ui/CookieConsent";
+import GoogleTagManager from "@/components/ui/GoogleTagManager";
 import "./globals.css";
 
-// Placeholder fonts — replace per project
-const headingFont = Inter({
+const headingFont = Montserrat({
   variable: "--font-heading",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const bodyFont = Roboto({
+const bodyFont = Sora({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Nome do Projeto",
-  description: "Descrição da landing page do projeto.",
+  title: "Quinta dos Bons Ventos - Lotes em Itatiba",
+  description: "Lotes residenciais e comerciais em Itatiba. Loteamento aberto a partir de 250m², pronto para construir.",
 };
 
 export default function RootLayout({
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body
         className={`${headingFont.variable} ${bodyFont.variable} font-body antialiased`}
       >
+        <GoogleTagManager />
         {children}
         <CookieConsent />
       </body>
