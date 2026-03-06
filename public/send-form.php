@@ -4,7 +4,8 @@
  * Recebe a requisição do frontend React (JSON), processa e envia para o Webhook do n8n.
  * Evita exposição da URL real do Webhook e permite tratamento de CORS.
  *
- * SETUP: Substitua a variável $n8n_webhook_url pela URL real do webhook n8n do projeto.
+ * A URL do webhook é injetada automaticamente pelo GitHub Actions no deploy.
+ * O placeholder __N8N_WEBHOOK_URL__ é substituído pela URL real via sed.
  */
 
 header("Access-Control-Allow-Origin: *");
@@ -23,8 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// IMPORTANTE: Em produção, substitua pela URL real do webhook n8n
-$n8n_webhook_url = "COLOQUE_A_URL_DO_N8N_AQUI";
+$n8n_webhook_url = "__N8N_WEBHOOK_URL__";
+
+if ($n8n_webhook_url === "__N8N_WEBHOOK_URL__" || empty($n8n_webhook_url)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Webhook URL not configured. Run deploy via GitHub Actions.']);
+    exit;
+}
 
 $inputJSON = file_get_contents('php://input');
 $data = json_decode($inputJSON, TRUE);

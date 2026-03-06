@@ -1,0 +1,11 @@
+# Bloqueia acesso externo ao .env (segurança)
+<FilesMatch "^\.env$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Bloqueia acesso a arquivos ocultos em geral
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

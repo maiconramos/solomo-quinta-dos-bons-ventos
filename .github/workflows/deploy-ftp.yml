@@ -27,12 +27,20 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          MAINTENANCE_MODE: ${{ vars.MAINTENANCE_MODE || 'false' }}
+
+      - name: Inject webhook URL
+        run: sed -i 's|__N8N_WEBHOOK_URL__|${{ secrets.N8N_WEBHOOK_URL }}|g' ./out/send-form.php
 
       - name: Deploy to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./out/
           server-dir: ${{ secrets.FTP_PATH }}
+          exclude: |
+            **/.git*
+            **/.git*/**
