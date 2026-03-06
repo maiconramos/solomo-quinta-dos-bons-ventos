@@ -82,13 +82,22 @@ async function main() {
   writeFileSync(resolve(PUBLIC, "favicon.ico"), icoBuffer);
   console.log("  Generated favicon.ico");
 
+  // Resolve basePath from NEXT_PUBLIC_SITE_URL (same logic as src/lib/env.ts)
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+  let manifestBasePath = "";
+  try {
+    if (siteUrl) {
+      manifestBasePath = new URL(siteUrl).pathname.replace(/\/$/, "");
+    }
+  } catch { /* ignore invalid URL */ }
+
   // Generate site.webmanifest
   const manifest = {
     name: "Quinta dos Bons Ventos",
     short_name: "Quinta BV",
     icons: [
-      { src: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
-      { src: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
+      { src: `${manifestBasePath}/android-chrome-192x192.png`, sizes: "192x192", type: "image/png" },
+      { src: `${manifestBasePath}/android-chrome-512x512.png`, sizes: "512x512", type: "image/png" },
     ],
     theme_color: "#ffffff",
     background_color: "#ffffff",

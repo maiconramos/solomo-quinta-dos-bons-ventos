@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat, Sora } from "next/font/google";
+import { basePath } from "@/lib/env";
 import CookieConsent from "@/components/ui/CookieConsent";
 import GoogleTagManager from "@/components/ui/GoogleTagManager";
 import "./globals.css";
@@ -21,15 +22,15 @@ export const metadata: Metadata = {
   description: "Lotes residenciais e comerciais em Itatiba. Loteamento aberto a partir de 250m², pronto para construir.",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: `${basePath}/favicon.ico`, sizes: "any" },
+      { url: `${basePath}/favicon-16x16.png`, sizes: "16x16", type: "image/png" },
+      { url: `${basePath}/favicon-32x32.png`, sizes: "32x32", type: "image/png" },
     ],
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: `${basePath}/apple-touch-icon.png`, sizes: "180x180", type: "image/png" },
     ],
   },
-  manifest: "/site.webmanifest",
+  manifest: `${basePath}/site.webmanifest`,
 };
 
 export default function RootLayout({
