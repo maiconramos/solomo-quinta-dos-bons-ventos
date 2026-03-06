@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { basePath } from "@/lib/env";
 
 export default function Natureza() {
   return (
@@ -7,7 +8,7 @@ export default function Natureza() {
         {/* Ilustracao folhas — vem da borda esquerda da tela, ~45% da largura */}
         <div className="w-[70%] md:w-[45%] shrink-0 -ml-2 md:-ml-8 lg:-ml-12 mt-6 md:mt-0">
           <Image
-            src="/images/natureza-folhas.png"
+            src={`${basePath}/images/natureza-folhas.png`}
             alt="Ilustração de galho com folhas verdes"
             width={800}
             height={450}

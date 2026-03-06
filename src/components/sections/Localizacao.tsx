@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { basePath } from "@/lib/env";
 
 const distancias = [
   { tempo: "3 min", local: "da USF" },
@@ -27,7 +28,7 @@ export default function Localizacao() {
               {distancias.map((item) => (
                 <li key={item.local} className="flex items-center gap-3">
                   <Image
-                    src="/images/icon-clock.svg"
+                    src={`${basePath}/images/icon-clock.svg`}
                     alt="Relógio"
                     width={30}
                     height={29}
@@ -45,7 +46,7 @@ export default function Localizacao() {
         {/* Coluna direita - Foto */}
         <div className="w-full lg:w-[64%] relative min-h-[250px] md:min-h-[350px] lg:min-h-[500px]">
           <Image
-            src="/images/localizacao-foto.png"
+            src={`${basePath}/images/localizacao-foto.png`}
             alt="Vista aérea do empreendimento Quinta dos Bons Ventos em Itatiba"
             fill
             className="object-cover"

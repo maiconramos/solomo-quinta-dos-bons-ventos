@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { basePath } from "@/lib/env";
 
 export default function ProntoConstruir() {
   return (
@@ -8,7 +9,7 @@ export default function ProntoConstruir() {
         <div className="flex items-center justify-center bg-brand-secondary px-8 py-12 md:w-[40%] md:px-12 md:py-16 lg:px-16 lg:py-20">
           <div className="flex flex-col gap-6 max-w-[445px]">
             <Image
-              src="/images/icon-safety.svg"
+              src={`${basePath}/images/icon-safety.svg`}
               alt="Ícone de capacete de segurança"
               width={71}
               height={71}
@@ -33,7 +34,7 @@ export default function ProntoConstruir() {
         {/* Coluna direita — foto aérea */}
         <div className="relative min-h-[300px] md:w-[60%] md:min-h-[500px]">
           <Image
-            src="/images/pronto-para-construir.png"
+            src={`${basePath}/images/pronto-para-construir.png`}
             alt="Vista aérea do loteamento Quinta dos Bons Ventos"
             fill
             className="object-cover"

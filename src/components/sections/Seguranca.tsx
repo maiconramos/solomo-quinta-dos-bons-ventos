@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { basePath } from "@/lib/env";
 
 export default function Seguranca() {
   return (
@@ -6,7 +7,7 @@ export default function Seguranca() {
       {/* Background image */}
       <div className="relative w-full h-[350px] md:h-[500px] lg:h-[600px] xl:h-[700px]">
         <Image
-          src="/images/seguranca-bg.png"
+          src={`${basePath}/images/seguranca-bg.png`}
           alt="Vista aérea do loteamento Quinta dos Bons Ventos"
           fill
           className="object-cover"

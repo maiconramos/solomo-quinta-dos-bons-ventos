@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { basePath } from "@/lib/env";
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -13,7 +14,7 @@ export default function LeadForm() {
   const [phone, setPhone] = useState("");
 
   return (
-    <form action="/send-form.php" method="POST" className="flex flex-col gap-4">
+    <form action={`${basePath}/send-form.php`} method="POST" className="flex flex-col gap-4">
       <input
         type="text"
         name="nome"

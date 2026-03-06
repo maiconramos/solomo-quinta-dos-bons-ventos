@@ -1,5 +1,6 @@
 import Image from "next/image";
 import LeadForm from "@/components/ui/LeadForm";
+import { basePath } from "@/lib/env";
 
 export default function FooterFormulario() {
   return (
@@ -12,7 +13,7 @@ export default function FooterFormulario() {
             {/* Waze + Endereço */}
             <div className="flex flex-col items-center md:flex-row md:items-start gap-1 md:gap-3 mb-1 text-center md:text-left">
               <Image
-                src="/images/icon-waze.svg"
+                src={`${basePath}/images/icon-waze.svg`}
                 alt="Waze"
                 width={48}
                 height={48}
@@ -42,7 +43,7 @@ export default function FooterFormulario() {
                 className="inline-flex items-center gap-3 group"
               >
                 <Image
-                  src="/images/icon-whatsapp.svg"
+                  src={`${basePath}/images/icon-whatsapp.svg`}
                   alt="WhatsApp"
                   width={44}
                   height={44}
@@ -78,14 +79,14 @@ export default function FooterFormulario() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16">
             <Image
-              src="/images/logo-guepardo.png"
+              src={`${basePath}/images/logo-guepardo.png`}
               alt="Guepardo Desenvolvimento Urbano"
               width={200}
               height={80}
               className="h-[100px] md:h-[112px] lg:h-[125px] w-auto"
             />
             <Image
-              src="/images/logo-gdu.png"
+              src={`${basePath}/images/logo-gdu.png`}
               alt="GDU Itatiba"
               width={200}
               height={80}
