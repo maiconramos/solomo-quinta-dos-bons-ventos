@@ -39,5 +39,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# image optimization manifest
+public/images/.optimized-manifest.json
+
 # development references (Figma slices, screenshots)
 referencia-desenvolvimento/

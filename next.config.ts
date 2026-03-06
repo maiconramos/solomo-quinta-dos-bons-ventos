@@ -5,7 +5,7 @@ const basePath = siteUrl ? new URL(siteUrl).pathname.replace(/\/$/, '') : '';
 
 const nextConfig: NextConfig = {
   output: 'export',
-  basePath: basePath || undefined,
+  ...(basePath && { basePath }),
   images: {
     unoptimized: true,
   },
