@@ -5,7 +5,6 @@
  * Evita exposição da URL real do Webhook.
  *
  * A URL do webhook é injetada automaticamente pelo GitHub Actions no deploy.
- * O placeholder __N8N_WEBHOOK_URL__ é substituído pela URL real via sed.
  */
 
 header("Content-Type: application/json; charset=UTF-8");
@@ -18,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $n8n_webhook_url = "__N8N_WEBHOOK_URL__";
 
-if ($n8n_webhook_url === "__N8N_WEBHOOK_URL__" || empty($n8n_webhook_url)) {
+if (empty($n8n_webhook_url) || strpos($n8n_webhook_url, 'http') !== 0) {
     http_response_code(500);
     echo json_encode(['error' => 'Webhook URL not configured. Run deploy via GitHub Actions.']);
     exit;
