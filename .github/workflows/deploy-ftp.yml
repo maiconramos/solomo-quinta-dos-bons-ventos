@@ -32,7 +32,9 @@ jobs:
           NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || '' }}
 
       - name: Inject webhook URL
-        run: sed -i 's|__N8N_WEBHOOK_URL__|${{ secrets.N8N_WEBHOOK_URL }}|g' ./out/send-form.php
+        run: |
+          sed -i 's|__N8N_WEBHOOK_URL__|${{ secrets.N8N_WEBHOOK_URL }}|g' ./out/send-form.php
+          cat ./out/send-form.php | grep -c "N8N_WEBHOOK_URL" && echo "ERROR: Placeholder not replaced!" && exit 1 || echo "Webhook URL injected successfully"
 
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6

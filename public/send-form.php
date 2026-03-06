@@ -1,22 +1,14 @@
 <?php
 /**
  * Solomo LP Boilerplate - Form Proxy
- * Recebe a requisição do frontend React (JSON), processa e envia para o Webhook do n8n.
- * Evita exposição da URL real do Webhook e permite tratamento de CORS.
+ * Recebe a requisição do frontend (form POST), processa e envia para o Webhook do n8n.
+ * Evita exposição da URL real do Webhook.
  *
  * A URL do webhook é injetada automaticamente pelo GitHub Actions no deploy.
  * O placeholder __N8N_WEBHOOK_URL__ é substituído pela URL real via sed.
  */
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json; charset=UTF-8");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -32,33 +24,35 @@ if ($n8n_webhook_url === "__N8N_WEBHOOK_URL__" || empty($n8n_webhook_url)) {
     exit;
 }
 
-$inputJSON = file_get_contents('php://input');
-$data = json_decode($inputJSON, TRUE);
-
-if (!$data) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Invalid JSON payload']);
-    exit;
+// Aceita form POST (x-www-form-urlencoded) ou JSON
+$contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+if (stripos($contentType, 'application/json') !== false) {
+    $data = json_decode(file_get_contents('php://input'), true) ?: [];
+} else {
+    $data = $_POST;
 }
 
-$payload = json_encode([
-    'name'  => htmlspecialchars(strip_tags($data['name'] ?? '')),
-    'email' => filter_var($data['email'] ?? '', FILTER_SANITIZE_EMAIL),
-    'phone' => htmlspecialchars(strip_tags($data['phone'] ?? '')),
-    'source'=> 'landing_page',
-    'date'  => date('Y-m-d H:i:s')
-]);
+$name  = htmlspecialchars(strip_tags($data['nome'] ?? $data['name'] ?? ''));
+$email = filter_var($data['email'] ?? '', FILTER_SANITIZE_EMAIL);
+$phone = htmlspecialchars(strip_tags($data['telefone'] ?? $data['phone'] ?? ''));
 
-$payloadArray = json_decode($payload, true);
-if (empty($payloadArray['name']) || empty($payloadArray['email'])) {
+if (empty($name) || empty($email)) {
     http_response_code(400);
     echo json_encode(['error' => 'Name and email are required']);
     exit;
 }
 
+$payload = json_encode([
+    'name'   => $name,
+    'email'  => $email,
+    'phone'  => $phone,
+    'source' => 'landing_page',
+    'date'   => date('Y-m-d H:i:s')
+]);
+
 $ch = curl_init($n8n_webhook_url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 curl_setopt($ch, CURLOPT_TIMEOUT, 10);
