@@ -5,6 +5,8 @@ import { basePath } from "@/lib/env";
 
 const ENABLE_TRACKING = process.env.NEXT_PUBLIC_ENABLE_TRACKING === "true";
 const TEST_EVENT_CODE = process.env.NEXT_PUBLIC_META_TEST_EVENT_CODE || "";
+const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || "";
+const STORAGE_KEY = "solomo_user_data";
 
 interface TrackData {
   email?: string;
@@ -14,9 +16,15 @@ interface TrackData {
   form_id?: string;
 }
 
+interface StoredUserData {
+  email: string;
+  phone: string;
+  name: string;
+}
+
 type FbqFunction = (
   method: string,
-  eventName: string,
+  eventNameOrPixelId: string,
   params?: Record<string, unknown>,
   options?: { eventID: string }
 ) => void;
@@ -26,6 +34,83 @@ declare global {
     fbq?: FbqFunction;
   }
 }
+
+// --- User data persistence (localStorage) ---
+
+function saveUserData(data: TrackData): void {
+  if (!data.email && !data.phone && !data.name) return;
+
+  try {
+    const existing = loadUserData();
+    const merged: StoredUserData = {
+      email: data.email || existing.email,
+      phone: data.phone || existing.phone,
+      name: data.name || existing.name,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+
+    // Update pixel Advanced Matching with new user data
+    updatePixelUserData(merged);
+  } catch {
+    // localStorage not available
+  }
+}
+
+function loadUserData(): StoredUserData {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {
+    // localStorage not available
+  }
+  return { email: "", phone: "", name: "" };
+}
+
+function mergeWithStored(data: TrackData): TrackData {
+  const stored = loadUserData();
+  return {
+    ...data,
+    email: data.email || stored.email,
+    phone: data.phone || stored.phone,
+    name: data.name || stored.name,
+  };
+}
+
+// --- Pixel Advanced Matching ---
+
+function splitName(fullName: string): { fn: string; ln: string } {
+  const parts = fullName.trim().split(/\s+/);
+  const fn = parts[0]?.toLowerCase() || "";
+  const ln = parts.length > 1 ? parts[parts.length - 1].toLowerCase() : "";
+  return { fn, ln };
+}
+
+function normalizePhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  // Add Brazil country code if local number (10-11 digits)
+  return digits.length <= 11 ? `55${digits}` : digits;
+}
+
+/** Re-init pixel with user data for Advanced Matching (pixel hashes automatically) */
+function updatePixelUserData(stored: StoredUserData): void {
+  if (typeof window.fbq !== "function" || !PIXEL_ID) return;
+  if (!stored.email && !stored.phone && !stored.name) return;
+
+  const userData: Record<string, string> = {};
+  if (stored.email) userData.em = stored.email.toLowerCase().trim();
+  if (stored.phone) userData.ph = normalizePhone(stored.phone);
+  if (stored.name) {
+    const { fn, ln } = splitName(stored.name);
+    if (fn) userData.fn = fn;
+    if (ln) userData.ln = ln;
+  }
+  userData.country = "br";
+
+  // Re-init with user data enables Advanced Matching for all subsequent events
+  window.fbq("init" as string, PIXEL_ID, userData as unknown as Record<string, unknown>);
+}
+
+// --- Cookie helpers ---
 
 function getCookie(name: string): string {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
@@ -43,6 +128,8 @@ function getFbc(): string {
   }
   return "";
 }
+
+// --- Event firing ---
 
 function fireServerEvent(eventName: string, eventId: string, data: TrackData) {
   const payload = {
@@ -82,14 +169,13 @@ function fireBrowserPixel(
   if (typeof window.fbq !== "function") return;
 
   const customData: Record<string, unknown> = {};
-  if (data.email) customData.email = data.email;
-  if (data.phone) customData.phone = data.phone;
-  if (data.name) customData.content_name = data.name;
   if (data.form_name) customData.form_name = data.form_name;
   if (data.form_id) customData.form_id = data.form_id;
 
   window.fbq("track", eventName, customData, { eventID: eventId });
 }
+
+// --- Exported API ---
 
 export type TrackFunction = (eventName: string, data?: TrackData) => void;
 
@@ -98,9 +184,13 @@ export function createTrackFunction(): TrackFunction {
   return (eventName: string, data: TrackData = {}) => {
     if (!ENABLE_TRACKING) return;
 
+    // Save PII if provided, then merge with stored data
+    if (data.email || data.phone || data.name) saveUserData(data);
+    const enriched = mergeWithStored(data);
+
     const eventId = crypto.randomUUID();
-    fireBrowserPixel(eventName, eventId, data);
-    fireServerEvent(eventName, eventId, data);
+    fireBrowserPixel(eventName, eventId, enriched);
+    fireServerEvent(eventName, eventId, enriched);
   };
 }
 
@@ -112,12 +202,25 @@ export function useTracking(): { track: TrackFunction } {
     (eventName: string, data: TrackData = {}) => {
       if (!ENABLE_TRACKING) return;
 
+      // Save PII if provided, then merge with stored data
+      if (data.email || data.phone || data.name) saveUserData(data);
+      const enriched = mergeWithStored(data);
+
       const eventId = crypto.randomUUID();
-      fireBrowserPixel(eventName, eventId, data);
-      fireServerEvent(eventName, eventId, data);
+      fireBrowserPixel(eventName, eventId, enriched);
+      fireServerEvent(eventName, eventId, enriched);
     },
     []
   );
+
+  // On mount: restore pixel Advanced Matching from stored data
+  useEffect(() => {
+    if (!ENABLE_TRACKING) return;
+    const stored = loadUserData();
+    if (stored.email || stored.phone || stored.name) {
+      updatePixelUserData(stored);
+    }
+  }, []);
 
   // Auto-fire PageView on mount (once)
   useEffect(() => {
