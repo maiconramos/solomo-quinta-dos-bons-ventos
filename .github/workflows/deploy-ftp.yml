@@ -52,6 +52,16 @@ jobs:
           META_PIXEL_ID: ${{ secrets.META_PIXEL_ID }}
           META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
 
+      - name: Verify injections
+        run: |
+          echo "--- send-form.php ---"
+          grep -c '__N8N_WEBHOOK_URL__\|__PLACEHOLDER__' ./out/send-form.php && echo "ERROR: send-form.php still has placeholders!" && exit 1 || echo "OK"
+          echo "--- messenger.php ---"
+          if [ -f ./out/api/messenger.php ]; then
+            grep -c '\[\[PIXEL_ID\]\]\|\[\[ACCESS_TOKEN\]\]' ./out/api/messenger.php && echo "WARNING: messenger.php still has Meta placeholders (tracking disabled)" || echo "OK: Meta secrets injected"
+            grep -c '__N8N_WEBHOOK_URL__' ./out/api/messenger.php && echo "WARNING: messenger.php still has webhook placeholder" || echo "OK: Webhook injected"
+          fi
+
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
@@ -60,6 +70,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./out/
           server-dir: ${{ secrets.FTP_PATH }}
+          dangerous-clean-slate: true
           exclude: |
             **/.git*
             **/.git*/**
