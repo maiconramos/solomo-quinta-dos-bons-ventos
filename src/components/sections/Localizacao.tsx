@@ -1,4 +1,5 @@
 import Image from "next/image";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { basePath } from "@/lib/env";
 
 const distancias = [
@@ -45,7 +46,7 @@ export default function Localizacao() {
 
         {/* Coluna direita - Foto */}
         <div className="w-full lg:w-[64%] relative min-h-[250px] md:min-h-[350px] lg:min-h-[500px]">
-          <Image
+          <OptimizedImage
             src={`${basePath}/images/localizacao-foto.png`}
             alt="Vista aérea do empreendimento Quinta dos Bons Ventos em Itatiba"
             fill

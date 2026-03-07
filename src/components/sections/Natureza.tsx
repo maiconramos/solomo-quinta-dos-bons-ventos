@@ -1,4 +1,4 @@
-import Image from "next/image";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { basePath } from "@/lib/env";
 
 export default function Natureza() {
@@ -7,7 +7,7 @@ export default function Natureza() {
       <div className="flex flex-col-reverse md:flex-row md:items-center">
         {/* Ilustracao folhas — vem da borda esquerda da tela, ~45% da largura */}
         <div className="w-[70%] md:w-[45%] shrink-0 -ml-2 md:-ml-8 lg:-ml-12 mt-6 md:mt-0">
-          <Image
+          <OptimizedImage
             src={`${basePath}/images/natureza-folhas.png`}
             alt="Ilustração de galho com folhas verdes"
             width={800}

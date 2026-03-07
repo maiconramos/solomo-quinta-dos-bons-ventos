@@ -1,4 +1,4 @@
-import Image from "next/image";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { basePath } from "@/lib/env";
 
 export default function HeroBanner() {
@@ -6,7 +6,7 @@ export default function HeroBanner() {
     <section className="relative w-full bg-white">
       {/* Logo em barra branca — apenas mobile */}
       <div className="flex justify-center py-3 md:hidden">
-        <Image
+        <OptimizedImage
           src={`${basePath}/images/logo-quinta-dos-bons-ventos.png`}
           alt="Quinta dos Bons Ventos - Itatiba"
           width={530}
@@ -18,7 +18,7 @@ export default function HeroBanner() {
 
       {/* Logo centralizada sobre a imagem — tablet/desktop */}
       <div className="hidden md:block absolute top-4 lg:top-5 left-1/2 -translate-x-1/2 z-10">
-        <Image
+        <OptimizedImage
           src={`${basePath}/images/logo-quinta-dos-bons-ventos.png`}
           alt="Quinta dos Bons Ventos - Itatiba"
           width={530}
@@ -29,7 +29,7 @@ export default function HeroBanner() {
       </div>
 
       {/* Imagem aérea — full img sem corte */}
-      <Image
+      <OptimizedImage
         src={`${basePath}/images/hero-banner.png`}
         alt="Vista aérea do loteamento Quinta dos Bons Ventos em Itatiba"
         width={4000}

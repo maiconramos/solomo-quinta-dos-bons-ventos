@@ -1,4 +1,4 @@
-import Image from "next/image";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { basePath } from "@/lib/env";
 
 export default function Seguranca() {
@@ -6,7 +6,7 @@ export default function Seguranca() {
     <section className="relative w-full">
       {/* Background image */}
       <div className="relative w-full h-[350px] md:h-[500px] lg:h-[600px] xl:h-[700px]">
-        <Image
+        <OptimizedImage
           src={`${basePath}/images/seguranca-bg.png`}
           alt="Vista aérea do loteamento Quinta dos Bons Ventos"
           fill

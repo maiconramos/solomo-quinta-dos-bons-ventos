@@ -1,4 +1,5 @@
 import Image from "next/image";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { basePath } from "@/lib/env";
 
 export default function ProntoConstruir() {
@@ -33,7 +34,7 @@ export default function ProntoConstruir() {
 
         {/* Coluna direita — foto aérea */}
         <div className="relative min-h-[300px] md:w-[60%] md:min-h-[500px]">
-          <Image
+          <OptimizedImage
             src={`${basePath}/images/pronto-para-construir.png`}
             alt="Vista aérea do loteamento Quinta dos Bons Ventos"
             fill

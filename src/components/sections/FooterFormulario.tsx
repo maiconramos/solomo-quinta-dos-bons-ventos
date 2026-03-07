@@ -1,4 +1,5 @@
 import Image from "next/image";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import LeadForm from "@/components/ui/LeadForm";
 import { basePath } from "@/lib/env";
 
@@ -78,14 +79,14 @@ export default function FooterFormulario() {
             Vendas:
           </p>
           <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16">
-            <Image
+            <OptimizedImage
               src={`${basePath}/images/logo-guepardo.png`}
               alt="Guepardo Desenvolvimento Urbano"
               width={200}
               height={80}
               className="h-[100px] md:h-[112px] lg:h-[125px] w-auto"
             />
-            <Image
+            <OptimizedImage
               src={`${basePath}/images/logo-gdu.png`}
               alt="GDU Itatiba"
               width={200}
