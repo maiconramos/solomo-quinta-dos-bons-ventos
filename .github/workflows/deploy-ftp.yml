@@ -31,11 +31,26 @@ jobs:
           MAINTENANCE_MODE: ${{ vars.MAINTENANCE_MODE || 'false' }}
           NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || '' }}
           NEXT_PUBLIC_GTM_ID: ${{ vars.NEXT_PUBLIC_GTM_ID || '' }}
+          NEXT_PUBLIC_ENABLE_TRACKING: ${{ vars.NEXT_PUBLIC_ENABLE_TRACKING || 'false' }}
+          NEXT_PUBLIC_META_PIXEL_ID: ${{ vars.NEXT_PUBLIC_META_PIXEL_ID || '' }}
 
       - name: Inject webhook URL
         run: |
           sed -i 's|__N8N_WEBHOOK_URL__|${{ secrets.N8N_WEBHOOK_URL }}|g' ./out/send-form.php
           cat ./out/send-form.php | grep -c "N8N_WEBHOOK_URL" && echo "ERROR: Placeholder not replaced!" && exit 1 || echo "Webhook URL injected successfully"
+
+      - name: Inject webhook URL in messenger.php
+        run: |
+          if [ -f ./out/api/messenger.php ]; then
+            sed -i 's|__N8N_WEBHOOK_URL__|${{ secrets.N8N_WEBHOOK_URL }}|g' ./out/api/messenger.php
+            echo "Webhook URL injected in messenger.php"
+          fi
+
+      - name: Inject Meta CAPI secrets
+        run: npx tsx scripts/inject-api-secrets.ts
+        env:
+          META_PIXEL_ID: ${{ secrets.META_PIXEL_ID }}
+          META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
 
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6

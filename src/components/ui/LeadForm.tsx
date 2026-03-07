@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { basePath } from "@/lib/env";
+import { useTracking } from "@/hooks/useTracking";
 
 type FormStatus = "idle" | "sending" | "success" | "error";
 
@@ -29,6 +30,7 @@ export default function LeadForm({
   formName = "lead_form",
   formId = "lead-form",
 }: LeadFormProps) {
+  const { track } = useTracking();
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -75,6 +77,15 @@ export default function LeadForm({
           form_id: formId,
         });
       }
+
+      // Meta CAPI + Pixel tracking
+      track("Lead", {
+        email: payload.email,
+        phone: payload.phone,
+        name: payload.name,
+        form_name: formName,
+        form_id: formId,
+      });
     } catch (err) {
       setStatus("error");
       setErrorMessage(

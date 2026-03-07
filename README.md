@@ -46,7 +46,7 @@ Lint, build estático e deploy via FTP para cPanel.
 | React | 19 | UI Components |
 | TypeScript | 5 | Type Safety |
 | Tailwind CSS | v4 | Styling (utility-first) |
-| PHP | - | Form proxy (send-form.php → n8n) |
+| PHP | - | Form proxy (send-form.php → n8n) + Meta CAPI proxy (messenger.php) |
 
 ## Estrutura do Projeto
 
@@ -59,9 +59,13 @@ Lint, build estático e deploy via FTP para cPanel.
 │   ├── components/
 │   │   ├── sections/            # Seções full-width da LP
 │   │   ├── layout/              # Header, Footer
-│   │   └── ui/                  # Botões, inputs, cards
+│   │   └── ui/                  # Botões, inputs, cards, MetaPixel, LeadForm
+│   ├── hooks/
+│   │   └── useTracking.ts       # Hook de rastreamento Meta CAPI + Pixel (dedup, consent)
 │   └── lib/                     # Helpers e utilitários
 ├── public/
+│   ├── api/
+│   │   └── messenger.php        # Proxy PHP → Meta CAPI + n8n (tokens injetados no deploy)
 │   ├── images/                  # Assets do projeto
 │   └── send-form.php            # Proxy PHP → n8n webhook
 ├── .agents/
@@ -71,7 +75,7 @@ Lint, build estático e deploy via FTP para cPanel.
 │   └── commands/                # Slash commands (/init-project, etc.)
 ├── .github/
 │   └── workflows/
-│       └── deploy-ftp.yml       # CI/CD: build + FTP deploy
+│       └── deploy-ftp.yml       # CI/CD: build + inject secrets + FTP deploy
 ├── referencia-desenvolvimento/  # Prints e context.md (gitignored)
 ├── progress.md                  # Tracking de seções
 ├── CLAUDE.md                    # Instruções para agentes IA
@@ -89,6 +93,11 @@ Lint, build estático e deploy via FTP para cPanel.
 | `FTP_USER` | Usuário FTP |
 | `FTP_PASSWORD` | Senha FTP |
 | `FTP_PATH` | Caminho no servidor |
+| `NEXT_PUBLIC_ENABLE_TRACKING` | Habilita rastreamento Meta (`true`/`false`) |
+| `NEXT_PUBLIC_META_PIXEL_ID` | ID do Pixel Meta (browser-side) |
+| `META_PIXEL_ID` | ID do Pixel Meta (server-side, injetado no deploy) |
+| `META_ACCESS_TOKEN` | Token de acesso Meta CAPI (injetado no deploy) |
+| `META_TEST_EVENT_CODE` | Codigo de teste Meta Events Manager (opcional) |
 | `FIGMA_API_KEY` | API key do Figma |
 
 ## Comandos Disponíveis
@@ -113,9 +122,14 @@ npm run lint     # ESLint
 
 ### Automático (GitHub Actions)
 Configure os secrets no GitHub:
-- `FTP_SERVER`, `FTP_USER`, `FTP_PASSWORD`, `FTP_PATH`
+- `FTP_SERVER`, `FTP_USER`, `FTP_PASSWORD`, `FTP_PATH`, `N8N_WEBHOOK_URL`
+- `META_PIXEL_ID`, `META_ACCESS_TOKEN` (para rastreamento Meta CAPI)
 
-Push para `main` dispara build + deploy automático.
+Configure as variables no GitHub:
+- `MAINTENANCE_MODE`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_GTM_ID`
+- `NEXT_PUBLIC_ENABLE_TRACKING`, `NEXT_PUBLIC_META_PIXEL_ID`
+
+Push para `main` dispara build + inject secrets + deploy automático.
 
 ### Manual
 ```bash
@@ -128,5 +142,6 @@ npm run build
 - **Static Export Only** — sem SSR, sem API Routes
 - **Max 250-300 linhas por arquivo** — dividir em sub-componentes
 - **Mobile First** — classes base = mobile, breakpoints para desktop
-- **Sem webhooks expostos** — formulários usam proxy PHP
-- **Secrets em .env** — nunca usar `NEXT_PUBLIC_` para URLs sensíveis
+- **Sem webhooks/tokens expostos** — formularios usam proxy PHP, URLs e tokens injetados no deploy
+- **Secrets em .env** — nunca usar `NEXT_PUBLIC_` para URLs sensiveis ou tokens de API
+- **Meta CAPI** — rastreamento server-side via `useTracking` hook + `messenger.php` (ativar com `NEXT_PUBLIC_ENABLE_TRACKING`)

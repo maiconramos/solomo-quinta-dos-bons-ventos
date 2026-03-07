@@ -32,7 +32,8 @@ HeroBanner → Seções intermediárias → LeadCaptureForm → Footer
 **Organização de componentes:**
 - `src/components/sections/` — seções full-width (um arquivo por seção)
 - `src/components/layout/` — componentes estruturais (Header/Footer)
-- `src/components/ui/` — micro-componentes reutilizáveis (botões, inputs, cards, CookieConsent)
+- `src/components/ui/` — micro-componentes reutilizáveis (botões, inputs, cards, CookieConsent, MetaPixel, LeadForm)
+- `src/hooks/` — hooks React (`useTracking` para rastreamento Meta CAPI)
 - `src/lib/` — helpers e utilitários
 - `src/lib/design-system.ts` — tokens semânticos do design system (cores, fontes, botões, tipografia mapeados para classes Tailwind)
 
@@ -43,7 +44,13 @@ HeroBanner → Seções intermediárias → LeadCaptureForm → Footer
 
 **Modo Manutenção:** Controlado por `MAINTENANCE_MODE` em `.env`. Quando `"true"`, `/` exibe página de manutenção e a LP fica acessível em `/home` para revisão. Quando `"false"` (ou não definido), `/` exibe a LP normalmente. Trocar o modo requer rebuild (`npm run build`).
 
-**Cookie Consent:** `src/components/ui/CookieConsent.tsx` — banner fixo no bottom, persiste aceite via `localStorage`. Incluído no `layout.tsx`.
+**Cookie Consent:** `src/components/ui/CookieConsent.tsx` — banner fixo no bottom, persiste aceite via `localStorage` (key: `"cookie-consent"`). Incluído no `layout.tsx`.
+
+**Meta CAPI (Rastreamento Server-Side):** Sistema de rastreamento nativo que elimina dependência de GTM/Stape para eventos Meta. Controlado por `NEXT_PUBLIC_ENABLE_TRACKING`.
+- `src/hooks/useTracking.ts` — hook que gerencia Pixel (browser) + CAPI (server) com deduplicação automática via `event_id`. Auto-dispara `PageView` no mount, detecta cliques em links WhatsApp (`wa.me`) para evento `Contact`. Respeita cookie consent.
+- `src/components/ui/MetaPixel.tsx` — carrega o script do Meta Pixel condicionalmente. Apenas `fbq('init')`, sem `PageView` automático (o hook cuida com dedup).
+- `public/api/messenger.php` — proxy PHP que recebe eventos do frontend, faz hash SHA256 de email/phone, envia para Meta Graph API v21.0, e para eventos Lead também encaminha para n8n. Usa placeholders `[[PIXEL_ID]]`, `[[ACCESS_TOKEN]]`, `__N8N_WEBHOOK_URL__` substituídos no deploy.
+- `scripts/inject-api-secrets.ts` — script de build que substitui os placeholders Meta no `messenger.php`. Roda automaticamente no GitHub Actions após o build.
 
 ## Constraints
 
@@ -51,7 +58,9 @@ HeroBanner → Seções intermediárias → LeadCaptureForm → Footer
 - **Mobile-first responsive.** Construa de mobile para `lg:`/`xl:`. Use Flexbox/Grid, nunca `position: absolute` para estrutura de layout.
 - **Imagens:** Use `next/image` com `unoptimized` (já configurado). Use `priority={true}` para imagens above-the-fold (LCP).
 - **Sem webhooks expostos.** Forms fazem POST para `/send-form.php` (proxy PHP em `/public`), que redireciona para a URL real do webhook n8n. A URL do webhook fica hardcoded server-side no `send-form.php`, nunca no frontend.
-- **Secrets** ficam apenas em `.env`. Nunca use `NEXT_PUBLIC_` para URLs de webhook ou API keys.
+- **Sem tokens expostos.** `META_PIXEL_ID` e `META_ACCESS_TOKEN` são injetados no `messenger.php` via `scripts/inject-api-secrets.ts` no deploy. O frontend só conhece `NEXT_PUBLIC_META_PIXEL_ID` (público por natureza).
+- **Secrets** ficam apenas em `.env`. Nunca use `NEXT_PUBLIC_` para URLs de webhook ou API keys. Exceção: `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_GTM_ID`, `NEXT_PUBLIC_META_PIXEL_ID` e `NEXT_PUBLIC_ENABLE_TRACKING` são públicos por natureza.
+- **Formulários e tracking:** O `LeadForm` dispara `dataLayer.push` (GTM) e `track('Lead', ...)` (Meta CAPI) após sucesso no envio.
 
 ## Workflow Figma-to-Code (Fatiamento)
 

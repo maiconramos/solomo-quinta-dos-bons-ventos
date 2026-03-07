@@ -3,6 +3,7 @@ import { Montserrat, Sora } from "next/font/google";
 import { basePath } from "@/lib/env";
 import CookieConsent from "@/components/ui/CookieConsent";
 import GoogleTagManager from "@/components/ui/GoogleTagManager";
+import MetaPixel from "@/components/ui/MetaPixel";
 import "./globals.css";
 
 const headingFont = Montserrat({
@@ -44,6 +45,7 @@ export default function RootLayout({
         className={`${headingFont.variable} ${bodyFont.variable} font-body antialiased`}
       >
         <GoogleTagManager />
+        <MetaPixel />
         {children}
         <CookieConsent />
       </body>
