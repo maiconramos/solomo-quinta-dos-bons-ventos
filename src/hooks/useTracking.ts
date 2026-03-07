@@ -117,16 +117,42 @@ function getCookie(name: string): string {
   return match ? decodeURIComponent(match[1]) : "";
 }
 
+function setCookie(name: string, value: string, days: number): void {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
 function getFbc(): string {
+  // 1. Check existing _fbc cookie (set by Meta Pixel or by us)
   const existing = getCookie("_fbc");
   if (existing) return existing;
 
+  // 2. Build from fbclid URL param (user arrived from Meta ad)
   const params = new URLSearchParams(window.location.search);
   const fbclid = params.get("fbclid");
   if (fbclid) {
-    return `fb.1.${Date.now()}.${fbclid}`;
+    // Format: fb.{subdomainIndex}.{creationTime_ms}.{fbclid}
+    // subdomainIndex=1 for domain-level (e.g. example.com)
+    const fbc = `fb.1.${Date.now()}.${fbclid}`;
+    // Persist as cookie (90 days, same as Meta Pixel default)
+    setCookie("_fbc", fbc, 90);
+    return fbc;
   }
+
   return "";
+}
+
+/** Capture fbclid on page load — must run early to not lose the URL param */
+function captureFbclid(): void {
+  const params = new URLSearchParams(window.location.search);
+  const fbclid = params.get("fbclid");
+  if (fbclid) {
+    // Ensure _fbc cookie exists even before first track() call
+    if (!getCookie("_fbc")) {
+      const fbc = `fb.1.${Date.now()}.${fbclid}`;
+      setCookie("_fbc", fbc, 90);
+    }
+  }
 }
 
 // --- Event firing ---
@@ -213,9 +239,14 @@ export function useTracking(): { track: TrackFunction } {
     []
   );
 
-  // On mount: restore pixel Advanced Matching from stored data
+  // On mount: capture fbclid + restore pixel Advanced Matching
   useEffect(() => {
     if (!ENABLE_TRACKING) return;
+
+    // Capture fbclid from URL before it's lost (e.g. SPA navigation, redirect)
+    captureFbclid();
+
+    // Restore Advanced Matching from stored user data
     const stored = loadUserData();
     if (stored.email || stored.phone || stored.name) {
       updatePixelUserData(stored);
