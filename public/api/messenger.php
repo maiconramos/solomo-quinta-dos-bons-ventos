@@ -35,8 +35,10 @@ $access_token = "[[ACCESS_TOKEN]]";
 $n8n_webhook  = "__N8N_WEBHOOK_URL__";
 
 // --- Graceful skip if tracking not configured (local dev) ---
-if ($pixel_id === "[[PIXEL_ID]]" || $access_token === "[[ACCESS_TOKEN]]"
-    || empty($pixel_id) || empty($access_token)) {
+// Check if values look like real tokens (not empty, not placeholders with brackets)
+if (empty($pixel_id) || empty($access_token)
+    || strpos($pixel_id, '[[') !== false
+    || strpos($access_token, '[[') !== false) {
     http_response_code(200);
     echo json_encode(['success' => true, 'message' => 'Tracking not configured, skipping']);
     exit;
@@ -154,9 +156,9 @@ $meta_ok = !$meta_curl_err && $meta_status >= 200 && $meta_status < 300;
 // --- For Lead events: also forward to n8n webhook ---
 $n8n_ok = true; // default true (non-Lead events skip this)
 if (strtolower($event_name) === 'lead'
-    && $n8n_webhook !== "__N8N_WEBHOOK_URL__"
     && !empty($n8n_webhook)
-    && strpos($n8n_webhook, 'http') === 0) {
+    && strpos($n8n_webhook, 'http') === 0
+    && strpos($n8n_webhook, '__') === false) {
 
     $n8n_payload = json_encode([
         'name'       => htmlspecialchars(strip_tags($custom_data['name'] ?? '')),

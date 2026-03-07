@@ -4,6 +4,7 @@ import { basePath } from "@/lib/env";
 import CookieConsent from "@/components/ui/CookieConsent";
 import GoogleTagManager from "@/components/ui/GoogleTagManager";
 import MetaPixel from "@/components/ui/MetaPixel";
+import TrackingProvider from "@/components/ui/TrackingProvider";
 import "./globals.css";
 
 const headingFont = Montserrat({
@@ -46,6 +47,7 @@ export default function RootLayout({
       >
         <GoogleTagManager />
         <MetaPixel />
+        <TrackingProvider />
         {children}
         <CookieConsent />
       </body>
