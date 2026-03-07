@@ -76,32 +76,58 @@ if (strpos($ip, ',') !== false) {
 
 // --- Build user_data for Meta ---
 $user_data_raw = $data['user_data'] ?? [];
+$custom_data_raw = $data['custom_data'] ?? [];
 
 $meta_user_data = [];
 
-// Hash email (SHA256, lowercase, trimmed)
+// Hash email (SHA256, lowercase, trimmed) — Meta requires em as array
 if (!empty($user_data_raw['email'])) {
     $meta_user_data['em'] = [hash('sha256', strtolower(trim($user_data_raw['email'])))];
 }
 
-// Hash phone (SHA256, digits only with leading +)
+// Hash phone (SHA256, digits only WITH country code)
+// Meta requires country code — Brazilian phones get 55 prefix
 if (!empty($user_data_raw['phone'])) {
     $phone_clean = preg_replace('/[^0-9]/', '', $user_data_raw['phone']);
+    // Add Brazil country code if not already present (phones with 10-11 digits = local)
+    if (strlen($phone_clean) <= 11) {
+        $phone_clean = '55' . $phone_clean;
+    }
     $meta_user_data['ph'] = [hash('sha256', $phone_clean)];
 }
 
-// Non-hashed fields
+// Hash first name (SHA256, lowercase, trimmed) — extracted from full name
+if (!empty($custom_data_raw['name'])) {
+    $name_parts = explode(' ', trim($custom_data_raw['name']));
+    $first_name = strtolower(trim($name_parts[0]));
+    if (!empty($first_name)) {
+        $meta_user_data['fn'] = [hash('sha256', $first_name)];
+    }
+    // Last name if available
+    if (count($name_parts) > 1) {
+        $last_name = strtolower(trim(end($name_parts)));
+        if (!empty($last_name)) {
+            $meta_user_data['ln'] = [hash('sha256', $last_name)];
+        }
+    }
+}
+
+// Country — always Brazil for this LP (hashed)
+$meta_user_data['country'] = [hash('sha256', 'br')];
+
+// Non-hashed fields (do NOT hash these per Meta docs)
 if (!empty($user_data_raw['fbp'])) {
     $meta_user_data['fbp'] = $user_data_raw['fbp'];
 }
 if (!empty($user_data_raw['fbc'])) {
     $meta_user_data['fbc'] = $user_data_raw['fbc'];
 }
+// client_user_agent is REQUIRED for website events
 if (!empty($user_data_raw['client_user_agent'])) {
     $meta_user_data['client_user_agent'] = $user_data_raw['client_user_agent'];
 }
 
-// Always override IP server-side
+// Always override IP server-side (do NOT hash)
 $meta_user_data['client_ip_address'] = $ip;
 
 // --- Build event payload for Meta ---
@@ -115,10 +141,9 @@ $event_data = [
 ];
 
 // Include custom_data if present
-$custom_data = $data['custom_data'] ?? null;
-if (!empty($custom_data) && is_array($custom_data)) {
+if (!empty($custom_data_raw) && is_array($custom_data_raw)) {
     $sanitized_custom = [];
-    foreach ($custom_data as $key => $value) {
+    foreach ($custom_data_raw as $key => $value) {
         if (is_string($value)) {
             $sanitized_custom[htmlspecialchars(strip_tags($key))] = htmlspecialchars(strip_tags($value));
         }
@@ -161,15 +186,15 @@ if (strtolower($event_name) === 'lead'
     && strpos($n8n_webhook, '__') === false) {
 
     $n8n_payload = json_encode([
-        'name'       => htmlspecialchars(strip_tags($custom_data['name'] ?? '')),
+        'name'       => htmlspecialchars(strip_tags($custom_data_raw['name'] ?? '')),
         'email'      => htmlspecialchars(strip_tags($user_data_raw['email'] ?? '')),
         'phone'      => htmlspecialchars(strip_tags($user_data_raw['phone'] ?? '')),
         'source'     => 'landing_page',
         'page_url'   => filter_var($event_source_url, FILTER_SANITIZE_URL),
         'user_agent' => $user_data_raw['client_user_agent'] ?? '',
         'ip'         => $ip,
-        'form_name'  => htmlspecialchars(strip_tags($custom_data['form_name'] ?? 'lead-form')),
-        'form_id'    => htmlspecialchars(strip_tags($custom_data['form_id'] ?? '')),
+        'form_name'  => htmlspecialchars(strip_tags($custom_data_raw['form_name'] ?? 'lead-form')),
+        'form_id'    => htmlspecialchars(strip_tags($custom_data_raw['form_id'] ?? '')),
         'date'       => date('Y-m-d H:i:s'),
     ]);
 
@@ -188,10 +213,18 @@ if (strtolower($event_name) === 'lead'
     $n8n_ok = !$n8n_curl_err && $n8n_status >= 200 && $n8n_status < 300;
 }
 
-// --- Response ---
+// --- Response (debug enabled temporarily for test_event_code validation) ---
 $response_data = [
     'success' => $meta_ok,
     'message' => $meta_ok ? 'Event tracked successfully' : 'Failed to send event to Meta',
+    'debug' => [
+        'meta_status'   => $meta_status,
+        'meta_response' => json_decode($meta_response, true),
+        'had_test_code' => !empty($test_event_code),
+        'event_name'    => $event_data['event_name'],
+        'event_id'      => $event_data['event_id'],
+        'user_data_keys' => array_keys($meta_user_data),
+    ],
 ];
 
 http_response_code($meta_ok ? 200 : 500);
