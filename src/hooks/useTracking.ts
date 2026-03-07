@@ -93,6 +93,18 @@ function fireBrowserPixel(
 
 export type TrackFunction = (eventName: string, data?: TrackData) => void;
 
+/** Standalone track function — no hooks, no side effects. Use in components that only need to fire events. */
+export function createTrackFunction(): TrackFunction {
+  return (eventName: string, data: TrackData = {}) => {
+    if (!ENABLE_TRACKING) return;
+
+    const eventId = crypto.randomUUID();
+    fireBrowserPixel(eventName, eventId, data);
+    fireServerEvent(eventName, eventId, data);
+  };
+}
+
+/** Full tracking hook — registers PageView + WhatsApp click listeners. Mount ONCE via TrackingProvider. */
 export function useTracking(): { track: TrackFunction } {
   const pageViewFired = useRef(false);
 

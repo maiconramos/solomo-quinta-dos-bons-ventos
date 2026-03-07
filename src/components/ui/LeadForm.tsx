@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { basePath } from "@/lib/env";
-import { useTracking } from "@/hooks/useTracking";
+import { createTrackFunction } from "@/hooks/useTracking";
 
 type FormStatus = "idle" | "sending" | "success" | "error";
 
@@ -30,7 +30,7 @@ export default function LeadForm({
   formName = "lead_form",
   formId = "lead-form",
 }: LeadFormProps) {
-  const { track } = useTracking();
+  const track = createTrackFunction();
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");

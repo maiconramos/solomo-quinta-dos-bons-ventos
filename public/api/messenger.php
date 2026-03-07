@@ -189,12 +189,11 @@ if (strtolower($event_name) === 'lead'
 }
 
 // --- Response ---
-if (!$meta_ok) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Failed to send event to Meta']);
-    exit;
-}
+$response_data = [
+    'success' => $meta_ok,
+    'message' => $meta_ok ? 'Event tracked successfully' : 'Failed to send event to Meta',
+];
 
-http_response_code(200);
-echo json_encode(['success' => true, 'message' => 'Event tracked successfully']);
+http_response_code($meta_ok ? 200 : 500);
+echo json_encode($response_data);
 ?>

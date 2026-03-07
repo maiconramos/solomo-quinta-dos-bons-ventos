@@ -97,7 +97,7 @@ Lint, build estático e deploy via FTP para cPanel.
 | `NEXT_PUBLIC_META_PIXEL_ID` | ID do Pixel Meta (browser-side) |
 | `META_PIXEL_ID` | ID do Pixel Meta (server-side, injetado no deploy) |
 | `META_ACCESS_TOKEN` | Token de acesso Meta CAPI (injetado no deploy) |
-| `META_TEST_EVENT_CODE` | Codigo de teste Meta Events Manager (opcional) |
+| `NEXT_PUBLIC_META_TEST_EVENT_CODE` | Codigo de teste Meta Events Manager (opcional) |
 | `FIGMA_API_KEY` | API key do Figma |
 
 ## Comandos Disponíveis
