@@ -3,7 +3,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { basePath } from "@/lib/env";
 
-const COOKIE_CONSENT_KEY = "cookie-consent";
 const ENABLE_TRACKING = process.env.NEXT_PUBLIC_ENABLE_TRACKING === "true";
 const TEST_EVENT_CODE = process.env.NEXT_PUBLIC_META_TEST_EVENT_CODE || "";
 
@@ -25,14 +24,6 @@ type FbqFunction = (
 declare global {
   interface Window {
     fbq?: FbqFunction;
-  }
-}
-
-function hasConsent(): boolean {
-  try {
-    return localStorage.getItem(COOKIE_CONSENT_KEY) === "true";
-  } catch {
-    return false;
   }
 }
 
@@ -108,7 +99,6 @@ export function useTracking(): { track: TrackFunction } {
   const track: TrackFunction = useCallback(
     (eventName: string, data: TrackData = {}) => {
       if (!ENABLE_TRACKING) return;
-      if (!hasConsent()) return;
 
       const eventId = crypto.randomUUID();
       fireBrowserPixel(eventName, eventId, data);
@@ -117,26 +107,13 @@ export function useTracking(): { track: TrackFunction } {
     []
   );
 
-  // Auto-fire PageView on mount (once, after consent)
+  // Auto-fire PageView on mount (once)
   useEffect(() => {
     if (!ENABLE_TRACKING) return;
     if (pageViewFired.current) return;
 
-    if (hasConsent()) {
-      pageViewFired.current = true;
-      track("PageView");
-      return;
-    }
-
-    function onStorage(e: StorageEvent) {
-      if (e.key === COOKIE_CONSENT_KEY && !pageViewFired.current && hasConsent()) {
-        pageViewFired.current = true;
-        track("PageView");
-      }
-    }
-
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    pageViewFired.current = true;
+    track("PageView");
   }, [track]);
 
   // WhatsApp click detection
