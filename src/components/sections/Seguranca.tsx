@@ -26,11 +26,7 @@ export default function Seguranca() {
             </p>
 
             <p className="font-body font-medium text-sm md:text-2xl lg:text-[28px] lg:leading-tight text-black mt-3 md:mt-6">
-              Videomonitoramento
-              <br />
-              24 horas e vigilância nas
-              <br className="hidden md:inline" />
-              {" "}noites e finais de semana
+              Videomonitoramento e Vigilância no Residencial
             </p>
           </div>
         </div>

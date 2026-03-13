@@ -25,7 +25,7 @@ export default function FooterFormulario() {
                   Empreendimento
                 </p>
                 <p className="font-body font-light text-lg md:text-xl lg:text-[22px] text-black leading-snug">
-                  Rua Luiz Jurassi Quinta dos Bons
+                  Rua Luiz Jarussi, Quinta dos Bons
                   <br />
                   Ventos, Itatiba - SP
                 </p>
